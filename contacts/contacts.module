@@ -1,0 +1,140 @@
+<?php
+
+/**
+ * @file
+ * Main file of the module.
+ */
+
+// Load CRUD functions.
+module_load_include('crud.inc', 'contacts');
+
+/**
+ * Implements hook_menu().
+ */
+function contacts_menu() {
+
+
+    return array(
+        'address-book/contact/%'=>array(
+            'description'=> t('page contact'),
+            'page callback'=>'contacts_page_view',
+            'page arguments'=> array(2),
+            'access callback' => 'contacts_access',
+            'access arguments'=> array(2),
+        ),
+
+    );
+}
+
+
+
+/**
+ * Implements hook_entity_info().
+ */
+function contacts_entity_info() {
+    return array(
+        'contacts' => array(
+            'label' => t('Contacts'),
+            'base table' => 'contacts',
+            'fieldable' => TRUE,
+            'entity keys' => array(
+                'id' => 'cid',
+                'label' => 'title',
+
+            ),
+            'bundles' => array(
+                'contacts' => array(
+                    'label' => t('Contacts'),
+                    'admin' => array(
+                        'path' => 'admin/content/contact/structure',
+                        'access arguments' => array('administer site configuration'),
+                    ),
+                ),
+            ),
+
+            // Entity API-related parameters.
+            'controller class' => 'EntityAPIController',
+            'entity class' => 'Entity',
+            'admin ui' => array(
+                'path' => 'address-book',
+                'file' => 'contacts.admin.inc',
+            ),
+            'module' => 'contacts',
+            'access callback' => 'contacts_access',
+        ),
+    );
+}
+/**
+ * Implements hook_permission().
+ */
+function contacts_permission() {
+    return array(
+        'access method' => array(
+            'title' => t('contact module '),
+            'description' => t('contact module'),
+        ),
+    );
+}
+ /**
+ * Access callback for Contact entities.
+ */
+function contacts_access() {
+    return user_access('access method');
+}
+
+/*
+ * Page with view contacts
+ */
+function contacts_page_view($cid){
+
+    $contacts = contacts_load($cid);
+
+    $contacts_wrapped = entity_metadata_wrapper('contacts', $contacts);
+    $first_name = $contacts_wrapped->first_name->value();
+    $last_name= $contacts_wrapped->last_name->value();
+    $output = contacts_view($contacts);
+    $path_new = array(
+        'source' => 'address-book/contact/'.$cid,
+        'alias' => 'address-book/contact/'.mb_strtolower($first_name . '-' . $last_name),
+    );
+    path_save($path_new);
+    return $output;
+
+}
+
+
+function contacts_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
+
+    if($form_state['step'] == 'views_form_views_form') {
+
+        $form['actions']['action::views_bulk_operations_delete_item'] = $form['select']['action::views_bulk_operations_delete_item'];
+        $form['select']['action::views_bulk_operations_delete_item']['#printed'] = TRUE;
+        $form['actions']['submit']['#access'] = FALSE;
+        $form['actions']['#access'] = TRUE;
+    }
+
+        if($form_state['step'] == 'views_bulk_operations_config_form') {
+            $form['parameter']['term']['settings']['term']['#type'] = 'select';
+            $vocab = taxonomy_vocabulary_machine_name_load('category');
+            $term = taxonomy_get_tree($vocab->vid);
+            $select_term = array();
+            foreach ($term as $item) {
+                $key = $item->tid;
+                $value = $item->name;
+                $select_term[$key] = $value;
+            }
+            $form['parameter']['term']['settings']['term']['#options'] = $select_term;
+
+        }
+}
+function contacts_entity_property_info_alter(&$info) {
+    $info['contacts']['properties']['user_id'] = array(
+        'label' => 'User_id',
+        'type' => 'user',
+        'schema field' => 'user_id',
+        'description' => 'Contacts "user_id" property.'
+    );
+
+
+}
+
