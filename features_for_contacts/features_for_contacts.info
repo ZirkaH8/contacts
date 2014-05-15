@@ -40,3 +40,4 @@ features[user_permission][] = access method
 features[views_view][] = address_book
 features_exclude[menu_links][main-menu_contacts:address-book] = main-menu_contacts:address-book
 features_exclude[taxonomy][tags] = tags
+project path = site/all/modules/custom/contacts

@@ -1,4 +1,7 @@
 <?php
+function contacts_entity_info_alter(&$info){
+
+}
 
 /**
  * @file
@@ -35,11 +38,18 @@ function contacts_form($form, &$form_state, $contacts, $op = 'edit') {
             '#type' => 'submit',
             '#value' => t('Save'),
         ),
+        'back' => array(
+            '#type' => 'submit',
+            '#value' => t('back'),
+        ),
+        'next' => array(
+            '#type' => 'submit',
+            '#value' => t('next'),
+        ),
     );
 
     // Attach fields to the form.
     field_attach_form('contacts', $contacts, $form, $form_state);
-
     return $form;
 }
 
@@ -50,6 +60,7 @@ function contacts_form($form, &$form_state, $contacts, $op = 'edit') {
  * @param $form_state
  */
 function contacts_form_submit($form, &$form_state) {
+    dsm($form_state);
     global $user;
     if(!empty($user)) {
         $form_state['values']['user_id'] = $user->uid;

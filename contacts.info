@@ -8,3 +8,4 @@ dependencies[] = entity
 dependencies[] = views
 dependencies[] = views_bulk_operations
 dependencies[] = rules
+dependencies[]= features_for_contacts
